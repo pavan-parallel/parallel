@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthify × Parallel — Narrative Animation Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D1512;--ink-2:#131E1A;--bone:#E8E4D8;--mist:#9AA69F;
+  --leaf:#5FBF7A;--turmeric:#E3A93C;--chili:#E4604E;
+  --line:rgba(232,228,216,.14);
+  --fd:'Fraunces',Georgia,serif;--fb:'Inter',system-ui,sans-serif;--fm:'IBM Plex Mono',monospace;
+  --ease:cubic-bezier(.22,.9,.24,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--ink);color:var(--bone);font-family:var(--fb);-webkit-font-smoothing:antialiased}
+.scene{position:absolute;inset:0;padding:6vh 7vw;opacity:0;visibility:hidden;transition:opacity .6s,visibility 0s .6s}
+.scene.active{opacity:1;visibility:visible;transition:opacity .6s,visibility 0s}
+.eyebrow{font-family:var(--fm);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--mist)}
+.big{font-family:var(--fd);font-weight:390;letter-spacing:-.01em;line-height:1.06}
+.big em{font-style:italic;font-weight:340}
+
+/* chrome */
+#chrome{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+  padding:18px 28px;font-family:var(--fm);font-size:11px;letter-spacing:.16em;color:var(--mist);z-index:60;text-transform:uppercase}
+#beats{display:flex;gap:7px;align-items:center}
+#beats .bd{width:7px;height:7px;border-radius:50%;background:var(--line);transition:background .3s,transform .3s}
+#beats .bd.done{background:var(--mist)}
+#beats .bd.now{background:var(--leaf);transform:scale(1.35)}
+#beats .sep{width:1px;height:14px;background:var(--line);margin:0 5px}
+#advance{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);font-family:var(--fm);font-size:11px;
+  letter-spacing:.2em;color:var(--mist);z-index:60;text-transform:uppercase;animation:blink 2.4s infinite}
+@keyframes blink{50%{opacity:.35}}
+
+/* ============ SCENE 1 · THE BET ============ */
+#s1 .stage{position:relative;height:100%;display:flex;flex-direction:column}
+#s1 .stage>.eyebrow{margin-bottom:1.6vh}
+#s1 .headline{height:32vh;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
+#s1 .hl-line{position:absolute;bottom:0;left:0;right:0;font-size:clamp(30px,4.4vw,58px);opacity:0;transform:translateY(26px);
+  transition:opacity .8s var(--ease),transform .8s var(--ease)}
+#s1 .hl-line .yr{font-family:var(--fm);font-size:.4em;letter-spacing:.18em;color:var(--mist);display:block;margin-bottom:10px}
+#s1 .hl-line.show{opacity:1;transform:none}
+#s1 .hl-line.gone{opacity:0;transform:translateY(-26px)}
+#s1 .chartwrap{flex:1;position:relative;margin-top:5vh}
+#s1 svg{width:100%;height:100%;overflow:visible}
+#riseline{stroke:var(--leaf);stroke-width:2.5;fill:none}
+#fall{stroke:var(--chili);stroke-width:2.5;fill:none;opacity:0}
+.ghost{stroke:var(--mist);stroke-width:1.5;fill:none;stroke-dasharray:6 7;opacity:0;transition:opacity 1s}
+#s1.b3 .ghost{opacity:.5}
+#shipdot{opacity:0}
+#s1 .gridl{stroke:var(--line)}
+#shipflag{position:absolute;font-family:var(--fm);font-size:10px;letter-spacing:.16em;color:var(--turmeric);text-transform:uppercase;
+  border:1px solid rgba(227,169,60,.5);padding:6px 10px;border-radius:3px;opacity:0;transform:translate(-50%,-16px) scale(.7);
+  transition:opacity .5s,transform .6s cubic-bezier(.2,1.6,.4,1)}
+#s1.b1 #shipflag,#s1.b2 #shipflag,#s1.b3 #shipflag,#s1.b4 #shipflag{opacity:1;transform:translate(-50%,0) scale(1)}
+#retno{position:absolute;right:0;top:-14px;text-align:right;font-family:var(--fd);font-size:clamp(36px,4vw,58px);transition:color .8s}
+#retno .rl{font-family:var(--fm);font-size:11px;letter-spacing:.18em;color:var(--mist);display:block;margin-top:2px;text-transform:uppercase}
+#s1 .redwash{position:absolute;inset:-8vh -8vw;background:radial-gradient(60% 60% at 70% 60%,rgba(228,96,78,.14),transparent 70%);
+  opacity:0;transition:opacity 1.6s;pointer-events:none}
+#s1.b2 .redwash,#s1.b3 .redwash,#s1.b4 .redwash{opacity:1}
+#qmark{position:absolute;font-family:var(--fd);font-style:italic;color:var(--mist);font-size:clamp(18px,2vw,26px);opacity:0;transition:opacity 1s .6s}
+#s1.b3 #qmark{opacity:1}
+#launchbox{position:absolute;top:0;left:0;text-align:left;opacity:0;transform:translateY(-14px);transition:opacity .7s,transform .7s var(--ease)}
+#s1.b4 #launchbox{opacity:1;transform:none}
+#launchbox .cd{font-family:var(--fm);font-size:clamp(26px,2.6vw,38px);color:var(--chili);letter-spacing:.06em}
+#launchbox .cl{font-family:var(--fm);font-size:10px;letter-spacing:.2em;color:var(--mist);text-transform:uppercase;margin-top:6px}
+
+/* ============ SCENE 2 · THE DIAGNOSIS ============ */
+#s2 .field{position:absolute;inset:0}
+#s2 .head{position:absolute;top:6vh;left:7vw;right:7vw;z-index:5;transition:opacity .6s var(--ease)}
+#s2.b3 .head{opacity:0}
+#s2 .head .big{font-size:clamp(26px,3.2vw,44px);margin-top:14px;transition:opacity .6s,transform .6s var(--ease)}
+.insight{position:absolute;width:min(300px,26vw);padding:16px 18px;border:1px solid var(--line);border-radius:9px;background:var(--ink-2);
+  font-size:13px;color:var(--mist);line-height:1.45;box-shadow:0 18px 40px rgba(0,0,0,.35);
+  transition:transform 1.1s var(--ease),opacity .8s,border-color .8s;opacity:0;
+  transform:translate(var(--sx),var(--sy)) rotate(var(--sr)) scale(.85)}
+.insight .no{font-family:var(--fm);font-size:10px;letter-spacing:.16em;color:var(--bone);display:block;margin-bottom:7px}
+#s2.b0 .insight,#s2.b1 .insight{opacity:1;transform:translate(var(--sx),var(--sy)) rotate(var(--sr))}
+#s2.b1 .insight{transform:translate(var(--cx),var(--cy)) rotate(0deg) scale(.92);border-color:var(--cc)}
+#s2.b2 .insight,#s2.b3 .insight{opacity:0;transform:translate(var(--cx),var(--cy)) rotate(0deg) scale(.4)}
+.problem{position:absolute;left:50%;width:min(340px,28vw);text-align:center;opacity:0;transform:translate(-50%,30px) scale(.9);
+  transition:opacity .7s,transform .9s var(--ease)}
+.problem h3{font-family:var(--fd);font-weight:430;font-size:clamp(20px,2vw,28px)}
+.problem .pl{font-family:var(--fm);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;display:block}
+#s2.b2 .problem{opacity:1;transform:translate(-50%,0) scale(1)}
+#s2.b3 .problem{opacity:0;transform:translate(-50%,-40px) scale(.85)}
+#s2 .twist{position:absolute;left:7vw;right:7vw;top:50%;transform:translateY(-30%);text-align:center;opacity:0;transition:opacity .8s .3s}
+#s2 .twist .big{font-size:clamp(30px,4.4vw,60px);max-width:24ch;margin:0 auto}
+#s2 .twist .hl{background:linear-gradient(transparent 60%,rgba(95,191,122,0) 60%);transition:background 0s;padding:0 4px}
+#s2.b3 .twist{opacity:1}
+#s2.b3 .twist .hl{background:linear-gradient(transparent 60%,rgba(95,191,122,.4) 60%);transition:background-position 0s;
+  background-size:200% 100%;animation:sweep 1.2s .9s var(--ease) forwards;background-position:100% 0;background-repeat:no-repeat}
+@keyframes sweep{from{background-position:100% 0}to{background-position:0 0}}
+
+/* ============ SCENE 3 · THE VERDICT ============ */
+#s3 .head{position:relative;z-index:5;height:16vh}
+#s3 .head .hswap{position:absolute;top:0;left:0;right:0;opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s var(--ease)}
+#s3 .head .hswap.show{opacity:1;transform:none}
+#s3 .head .big{font-size:clamp(26px,3.4vw,46px);margin-top:12px}
+#grid{position:relative;margin-top:4vh;height:62vh}
+.con{position:absolute;width:calc((100% - 3*18px)/4);height:calc((100% - 2*18px)/3 - 6px);border:1px solid var(--line);border-radius:10px;
+  background:var(--ink-2);padding:16px;display:flex;flex-direction:column;justify-content:space-between;
+  opacity:0;transform:var(--pos,none) translateY(50px) scale(.92);
+  transition:transform .9s var(--ease),opacity .6s,border-color .6s,filter .8s}
+.con .cn{font-size:clamp(12px,1.05vw,15px);font-weight:500;line-height:1.3}
+.con .ct{font-family:var(--fm);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mist)}
+.con .verd{align-self:flex-start;font-family:var(--fm);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:4px 9px;border-radius:3px;border:1.5px solid;opacity:0;transform:scale(2) rotate(-9deg);transition:opacity .3s,transform .45s cubic-bezier(.3,1.5,.5,1)}
+.verd.pri{color:var(--leaf);border-color:var(--leaf);background:rgba(95,191,122,.1)}
+.verd.exp{color:var(--turmeric);border-color:var(--turmeric);background:rgba(227,169,60,.1)}
+.verd.hold{color:var(--chili);border-color:var(--chili);background:rgba(228,96,78,.1)}
+#s3.b0 .con,#s3.b1 .con,#s3.b2 .con,#s3.b3 .con{opacity:1;transform:var(--pos,none)}
+#s3.b1 .con .verd,#s3.b2 .con .verd,#s3.b3 .con .verd{opacity:1;transform:scale(1) rotate(-2deg)}
+#s3.b1 .con.v-pri,#s3.b2 .con.v-pri{border-color:rgba(95,191,122,.55)}
+#s3.b1 .con.v-hold,#s3.b2 .con.v-hold{border-color:rgba(228,96,78,.45)}
+#s3.b2 .con.v-hold,#s3.b3 .con.v-hold{filter:grayscale(.7);opacity:.55}
+#s3.b3 .con.v-hold{opacity:0;transform:var(--pos) translateY(46vh) rotate(var(--fall,5deg))!important;transition:transform 1.2s cubic-bezier(.5,0,.8,.4),opacity 1s .3s}
+
+/* final line of scene 3 */
+#s3 .finale{position:absolute;left:32vw;right:7vw;bottom:10vh;text-align:center;opacity:0;transform:translateY(20px);transition:opacity .8s .8s,transform .8s .8s var(--ease)}
+#s3.b3 .finale{opacity:1;transform:none}
+#s3 .finale .big{font-size:clamp(26px,3.4vw,46px)}
+
+.wleaf{color:var(--leaf)}.wchili{color:var(--chili)}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.001s!important;animation-duration:.001s!important;transition-delay:0s!important;animation-delay:0s!important}
+}
+@media(max-width:900px){
+  .insight{width:38vw;font-size:11px}
+  .con .cn{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- SCENE 1 · THE BET -->
+<section class="scene active" id="s1" data-beats="5">
+  <div class="stage">
+    <div class="redwash"></div>
+    <p class="eyebrow">Scene 1 · The bet</p>
+    <div class="headline">
+      <div class="hl-line big" data-b="0"><span class="yr">2018 — 2023</span>Healthify builds the world's first AI nutritionist. <em>Fifty million users follow.</em></div>
+      <div class="hl-line big" data-b="1"><span class="yr">2024</span>They bet the company on an <em>AI-first redesign.</em></div>
+      <div class="hl-line big" data-b="2"><span class="yr">Weeks later</span>Retention starts to <em class="wchili">fall.</em></div>
+      <div class="hl-line big" data-b="3"><span class="yr">The problem</span>No one can tell <em>which part is to blame.</em></div>
+      <div class="hl-line big" data-b="4"><span class="yr">The clock</span>And the US launch <em class="wchili">won't wait.</em></div>
+    </div>
+    <div class="chartwrap">
+      <div id="retno"><span id="retval">—</span><span class="rl">Retention index</span></div>
+      <div id="launchbox"><div class="cd" id="cd">180 : 00 : 00</div><div class="cl">Days to US launch</div></div>
+      <svg viewBox="0 0 1000 420" preserveAspectRatio="none" aria-hidden="true">
+        <line class="gridl" x1="0" y1="105" x2="1000" y2="105"/>
+        <line class="gridl" x1="0" y1="210" x2="1000" y2="210"/>
+        <line class="gridl" x1="0" y1="315" x2="1000" y2="315"/>
+        <path id="riseline" d="M0 340 C 120 322, 220 300, 330 268 C 420 242, 500 210, 560 186"/>
+        <path id="fall" d="M560 186 C 640 190, 700 226, 770 272 C 830 312, 900 352, 990 382"/>
+        <path class="ghost" d="M560 186 C 660 170, 780 150, 990 120"/>
+        <path class="ghost" d="M560 186 C 660 200, 800 240, 990 250"/>
+        <path class="ghost" d="M560 186 C 640 210, 720 290, 990 400"/>
+        <circle id="shipdot" cx="560" cy="186" r="6" fill="var(--turmeric)"/>
+      </svg>
+      <div id="shipflag">AI-first redesign ships</div>
+      <div id="qmark" style="right:2%;top:18%">…product? onboarding? the AI itself?</div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 2 · THE DIAGNOSIS -->
+<section class="scene" id="s2" data-beats="4">
+  <div class="head">
+    <p class="eyebrow">Scene 2 · The diagnosis</p>
+    <div class="hswap">
+      <h2 class="big" data-h="0" style="opacity:1">Twenty interviews produce <em>seven insights…</em></h2>
+    </div>
+  </div>
+  <div class="field" id="field"></div>
+  <div class="problem" data-p="0" style="top:34%"><span class="pl" style="color:var(--leaf)">Problem 01</span><h3>Clarity of the core job</h3></div>
+  <div class="problem" data-p="1" style="top:48%"><span class="pl" style="color:var(--turmeric)">Problem 02</span><h3>Discoverability of features</h3></div>
+  <div class="problem" data-p="2" style="top:62%"><span class="pl" style="color:var(--chili)">Problem 03</span><h3>Trust in AI</h3></div>
+  <div class="twist">
+    <p class="eyebrow" style="margin-bottom:22px">The twist</p>
+    <h2 class="big">Users didn't hate the AI. <span class="hl">The AI was in the way of the core job.</span></h2>
+  </div>
+</section>
+
+<!-- SCENE 3 · THE VERDICT -->
+<section class="scene" id="s3" data-beats="4">
+  <div class="head">
+    <p class="eyebrow">Scene 3 · The verdict</p>
+    <div class="hswap show" data-h="0"><h2 class="big">We designed <em>twelve AI concepts…</em></h2></div>
+    <div class="hswap" data-h="1"><h2 class="big">…then users <em>passed judgement.</em></h2></div>
+    <div class="hswap" data-h="2"><h2 class="big">So we let the verdicts <em>rewrite the roadmap.</em></h2></div>
+  </div>
+  <div id="grid"></div>
+  <div class="finale"><h2 class="big">Personal context <em class="wleaf">won.</em> External signals <em class="wchili">didn't.</em></h2></div>
+</section>
+
+<div id="advance">Press → to advance the story</div>
+<div id="chrome">
+  <span>Healthify × Parallel — Narrative demo</span>
+  <div id="beats"></div>
+  <span id="scenelab">Scene 1 / 3</span>
+</div>
+
+<script>
+// ---------- data ----------
+const INSIGHTS=[
+  "The 'clean redesign' buried the core action of meal tracking",
+  "Users trust manual search but doubt Snap's accuracy",
+  "'Track with Ria' was powerful but nearly invisible",
+  "Users want insights that tell them what to do next",
+  "Users thought Ria was paywalled; preferred taps over typing",
+  "Users expect in-app AI to know more than ChatGPT",
+  "Healthify is 'the calorie tracker' — that must stay sacred"
+];
+// cluster: 0=clarity(leaf) 1=discovery(turmeric) 2=trust(chili)
+const CLUSTER=[0,2,1,0,1,2,0];
+const CCOL=['var(--leaf)','var(--turmeric)','var(--chili)'];
+
+const CONCEPTS=[
+ ["Multi-modality tracking","Multi-modal","pri"],
+ ["Voice-based planning","Multi-modal","exp"],
+ ["Video Ria interaction","Multi-modal","exp"],
+ ["Suggestions from your logs","Personalised","exp"],
+ ["Location-based suggestions","Personalised","pri"],
+ ["Picked for you","Personalised","pri"],
+ ["Coach recommends","Personalised","pri"],
+ ["Live health meter","Personalised","pri"],
+ ["Suggestions from social saves","Community","exp"],
+ ["Popular around you","Community","hold"],
+ ["What celebrities eat","Community","hold"],
+ ["Q&A / polls","Community","hold"]
+];
+
+// ---------- scene 2 field ----------
+const field=document.getElementById('field');
+const W=()=>innerWidth,H=()=>innerHeight;
+INSIGHTS.forEach((t,i)=>{
+  const d=document.createElement('div');
+  d.className='insight';
+  d.innerHTML=`<span class="no">Insight 0${i+1}</span>${t}`;
+  // scattered positions: jittered 3-column grid (avoids header zone + right-edge overflow)
+  const col=i%3,row=Math.floor(i/3);
+  const sx=([5,34,62][col] + Math.sin(i*2.3)*2)+'vw';
+  const sy=(30 + row*19 + Math.cos(i*1.7)*2.5)+'vh';
+  const sr=((i%2?1:-1)*(3+(i*13)%5))+'deg';
+  // cluster targets: three columns
+  const c=CLUSTER[i];
+  const within=CLUSTER.slice(0,i).filter(x=>x===c).length;
+  const cx=(12+c*30)+'vw';
+  const cy=(34+within*16)+'vh';
+  d.style.setProperty('--sx',sx);d.style.setProperty('--sy',sy);d.style.setProperty('--sr',sr);
+  d.style.setProperty('--cx',cx);d.style.setProperty('--cy',cy);d.style.setProperty('--cc',CCOL[c]);
+  d.style.transitionDelay=(i*0.07)+'s';
+  field.appendChild(d);
+});
+// problems appear where clusters were
+document.querySelectorAll('.problem').forEach((p,i)=>{
+  p.style.left=(12+i*30+13)+'vw';p.style.transform='';
+  p.style.top='38vh';
+  p.style.transitionDelay=(i*0.12)+'s';
+});
+
+// ---------- scene 3 grid ----------
+const grid=document.getElementById('grid');
+const cards=CONCEPTS.map((c,i)=>{
+  const d=document.createElement('div');
+  d.className='con v-'+c[2];
+  d.innerHTML=`<div><span class="ct">${c[1]}</span><p class="cn" style="margin-top:8px">${c[0]}</p></div><span class="verd ${c[2]}">${c[2]==='pri'?'Prioritise':c[2]==='exp'?'Explore':'Hold'}</span>`;
+  d.style.transitionDelay=(i*0.05)+'s';
+  d.style.setProperty('--fall',((i%2?1:-1)*(4+i%7))+'deg');
+  grid.appendChild(d);
+  return d;
+});
+function layout(order){
+  // order: array of card indices in display order; place into 4x3 grid via --pos translate
+  const gw=grid.clientWidth,gh=grid.clientHeight;
+  const cw=(gw-3*18)/4, ch=(gh-2*18)/3-6;
+  order.forEach((ci,slot)=>{
+    const col=slot%4,row=Math.floor(slot/4);
+    const x=col*(cw+18),y=row*(ch+18);
+    cards[ci].style.setProperty('--pos',`translate(${x}px,${y}px)`);
+  });
+}
+const ORDER0=[5,9,0,3,10,6,1,11,7,4,2,8]; // verdicts intentionally mixed pre-sort
+const bucket=v=>CONCEPTS.map((c,i)=>[c,i]).filter(([c])=>c[2]===v).map(([,i])=>i);
+const SORTED=[...bucket('pri'),...bucket('exp'),...bucket('hold')];
+
+// ---------- beat engine ----------
+const scenes=[...document.querySelectorAll('.scene')];
+let si=0,beat=0;
+const beatsEl=document.getElementById('beats');
+const sceneLab=document.getElementById('scenelab');
+const advanceEl=document.getElementById('advance');
+let advanced=false;
+
+function drawBeats(){
+  const total=+scenes[si].dataset.beats;
+  beatsEl.innerHTML='';
+  for(let s=0;s<scenes.length;s++){
+    if(s>0){const sep=document.createElement('span');sep.className='sep';beatsEl.appendChild(sep);}
+    const t=+scenes[s].dataset.beats;
+    for(let b=0;b<t;b++){
+      const d=document.createElement('span');d.className='bd';
+      if(s<si||(s===si&&b<beat))d.classList.add('done');
+      if(s===si&&b===beat)d.classList.add('now');
+      beatsEl.appendChild(d);
+    }
+  }
+  sceneLab.textContent=`Scene ${si+1} / ${scenes.length}`;
+}
+
+function applyBeat(){
+  const sc=scenes[si];
+  if(si!==0)clearInterval(cdTimer); // stop Scene 1 countdown once we leave it
+  for(let b=0;b<8;b++)sc.classList.remove('b'+b);
+  for(let b=0;b<=beat;b++)sc.classList.add('b'+b);
+  sceneHooks[si](beat);
+  drawBeats();
+  if(!advanced&&(si>0||beat>0)){advanceEl.style.display='none';advanced=true;}
+}
+
+function next(){
+  const total=+scenes[si].dataset.beats;
+  if(beat<total-1){beat++;applyBeat();}
+  else if(si<scenes.length-1){
+    scenes[si].classList.remove('active');
+    si++;beat=0;
+    scenes[si].classList.add('active');
+    applyBeat();
+  }
+}
+function prev(){
+  if(beat>0){beat--;hardResetScene();applyBeat();}
+  else if(si>0){
+    scenes[si].classList.remove('active');
+    si--;beat=+scenes[si].dataset.beats-1;
+    scenes[si].classList.add('active');
+    hardResetScene();applyBeat();
+  }
+}
+function hardResetScene(){ // re-run hooks from 0..beat so JS-driven states match
+  for(let b=0;b<=beat;b++)sceneHooks[si](b,true);
+}
+
+// ---------- scene-specific JS hooks ----------
+// Scene 1: line drawing + counters
+const rise=document.getElementById('riseline'),fall=document.getElementById('fall');
+const riseLen=()=>rise.getTotalLength(),fallLen=()=>fall.getTotalLength();
+const retval=document.getElementById('retval');
+let cdTimer=null,retTimer=null;
+function setLine(el,drawn){
+  const L=el.getTotalLength();
+  el.style.strokeDasharray=L;
+  el.style.strokeDashoffset=L*(1-drawn);
+}
+function animLine(el,from,to,dur,cb){
+  const t0=performance.now();
+  function tick(t){
+    const p=Math.min(1,(t-t0)/dur);
+    const e=1-Math.pow(1-p,3);
+    setLine(el,from+(to-from)*e);
+    if(p<1)requestAnimationFrame(tick);else cb&&cb();
+  }
+  requestAnimationFrame(tick);
+}
+function animNum(from,to,dur,fmt){
+  clearInterval(retTimer);
+  const t0=performance.now();
+  function tick(t){
+    const p=Math.min(1,(t-t0)/dur);
+    const e=1-Math.pow(1-p,2);
+    retval.textContent=fmt(from+(to-from)*e);
+    if(p<1)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+function headlines(sc,b){
+  sc.querySelectorAll('.hl-line').forEach(h=>{
+    const hb=+h.dataset.b;
+    h.classList.toggle('show',hb===b);
+    h.classList.toggle('gone',hb<b);
+  });
+}
+function startCountdown(){
+  clearInterval(cdTimer);
+  let secs=180*24*3600;
+  const el=document.getElementById('cd');
+  cdTimer=setInterval(()=>{
+    secs-=37; // dramatic speed
+    const d=Math.floor(secs/86400),h=Math.floor(secs%86400/3600),m=Math.floor(secs%3600/60);
+    el.textContent=`${String(d).padStart(3,'0')} : ${String(h).padStart(2,'0')} : ${String(m).padStart(2,'0')}`;
+  },50);
+}
+const shipdot=document.getElementById('shipdot');
+const shipflag=document.getElementById('shipflag');
+function placeFlag(){
+  // position flag over svg point (560,186) of viewBox 1000x420
+  const svg=scenes[0].querySelector('svg');
+  const r=svg.getBoundingClientRect(),wrap=scenes[0].querySelector('.chartwrap').getBoundingClientRect();
+  shipflag.style.left=(r.left-wrap.left+560/1000*r.width)+'px';
+  shipflag.style.top=(r.top-wrap.top+186/420*r.height-46)+'px';
+}
+const hookS1=(b,silent)=>{
+  const sc=scenes[0];
+  headlines(sc,b);
+  if(b===0){setLine(fall,0);fall.style.opacity=0;shipdot.style.opacity=0;
+    if(!silent){setLine(rise,0);animLine(rise,0,1,2200);animNum(0,100,2200,v=>Math.round(v));}
+    else{setLine(rise,1);retval.textContent='100';}
+    retvalColor('var(--bone)');clearInterval(cdTimer);
+  }
+  if(b===1){placeFlag();shipdot.style.opacity=1;fall.style.opacity=1;setLine(fall,0);}
+  if(b===2){fall.style.opacity=1;
+    if(!silent){animLine(fall,0,1,2400);animNum(100,64,2400,v=>Math.round(v));}
+    else{setLine(fall,1);retval.textContent='64';}
+    retvalColor('var(--chili)');
+  }
+  if(b===4&&!silent)startCountdown();
+  if(b<4)clearInterval(cdTimer);
+};
+function retvalColor(c){document.getElementById('retno').style.color=c;}
+
+// Scene 2
+const hookS2=(b)=>{
+  const sc=scenes[1];
+  const h=sc.querySelector('[data-h="0"]');
+  if(b===0)h.innerHTML='Twenty interviews produce <em>seven insights…</em>';
+  if(b===1)h.innerHTML='…which cluster into <em>three patterns…</em>';
+  if(b===2)h.innerHTML='…that name <em>three problems.</em>';
+  // b===3: the header fades out via #s2.b3 .head (keeps last text so it can animate out)
+};
+// Scene 3
+const hookS3=(b)=>{
+  const heads=scenes[2].querySelectorAll('.hswap');
+  heads.forEach(x=>x.classList.remove('show'));
+  if(b===0)heads[0].classList.add('show');
+  if(b===1)heads[1].classList.add('show');
+  if(b>=2)heads[2].classList.add('show');
+  if(b<=1)layout(ORDER0);
+  if(b>=2)layout(SORTED);
+};
+const sceneHooks=[hookS1,hookS2,hookS3];
+
+// ---------- input ----------
+addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();next();}
+  if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();prev();}
+});
+addEventListener('click',e=>{ (e.clientX>innerWidth*.5)?next():prev(); });
+let tx=null;
+addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{
+  if(tx===null)return;
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>50)dx<0?next():prev();
+  tx=null;
+},{passive:true});
+addEventListener('resize',()=>{if(si===2)layout(beat>=2?SORTED:ORDER0);if(si===0&&beat>=1)placeFlag();});
+
+// ---------- init ----------
+layout(ORDER0);
+applyBeat();
+</script>
+</body>
+</html>
